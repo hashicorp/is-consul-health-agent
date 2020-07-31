@@ -1,0 +1,16 @@
+[Unit]
+Description="Consul Autopilot Health Agent"
+Documentation=https://www.consul.io/
+Requires=network-online.target
+After=consul-kv.service
+
+[Service]
+Type=simple
+User=consul-kv
+Group=consul-kv
+ExecStart=/usr/local/bin/is-consul-autopilot-health
+KillMode=control-group
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
