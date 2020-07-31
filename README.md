@@ -39,6 +39,6 @@ go build
 - [ ] Create a DefaultHealthCheck struct
   - Once a cluster is healthy, forward subsequent health checks to a Consul endpoint (e.g. /operator/autopilot/health).
   - Currently after the cluster has bootstrapped we change state to automatically returning HTTP 200.
-- [ ] Add a commander ([michellh/cli](https://github.com/mitchellh/cli) or [spf12/cobra](https://github.com/spf13/cobra)).
+- [ ] Add a commander ([mitchellh/cli](https://github.com/mitchellh/cli) or [spf12/cobra](https://github.com/spf13/cobra)).
 - [ ] Clean up config/environment variable handling.
 - [ ] Add signal handling. Refresh state on SIGHUP.
