@@ -6,7 +6,7 @@ The impetus for developing this service lies with deployment in Google Cloud Pla
 The health checking logic was derived from the HashiCorp Cloud Platform team's [Consul Host Manager](https://github.com/hashicorp/cloud-consul-host-manager) agent.
 
 ## Configuration
-A systemd unit file is included in this repository, which will launch the agent and ensure it it restarted in the event of failure. The unitfile alone, however, is not enough to launch the application. It is necessary to provide a [drop-in unit](https://coreos.com/os/docs/latest/using-systemd-drop-in-units.html) to configure environment variables the application relies on to communicate with the Consul cluster.
+A systemd unit file is included in this repository, which will launch the agent and ensure it is restarted in the event of failure. The unit file alone, however, is not enough to launch the application. It is necessary to provide a [drop-in unit](https://coreos.com/os/docs/latest/using-systemd-drop-in-units.html) to configure environment variables the application relies on to communicate with the Consul cluster.
 
 For example, if the loaded systemd unit is named `consul-health.service`, a drop-in may look like this:
 
@@ -42,3 +42,4 @@ go build
 - [ ] Add a commander ([mitchellh/cli](https://github.com/mitchellh/cli) or [spf12/cobra](https://github.com/spf13/cobra)).
 - [ ] Clean up config/environment variable handling.
 - [ ] Add signal handling. Refresh state on SIGHUP.
+- [ ] Make the upgrade version tag configurable. It is currently hard-coded to `consul_cluster_version`.
