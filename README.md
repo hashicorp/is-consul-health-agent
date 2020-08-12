@@ -43,3 +43,4 @@ go build
 - [ ] Clean up config/environment variable handling.
 - [ ] Add signal handling. Refresh state on SIGHUP.
 - [ ] Make the upgrade version tag configurable. It is currently hard-coded to `consul_cluster_version`.
+- [ ] Add a context to the bootstrap health check process

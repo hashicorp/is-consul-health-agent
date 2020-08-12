@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/hashicorp/is-consul-health-agent/health"
+	log "github.com/sirupsen/logrus"
 )
 
 var isBootstrapped bool = false
@@ -17,6 +18,7 @@ func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
 		if check.IsHealthy() {
 			// Change global state
 			// Once this has succeeded, we switch to a standard health check
+			log.Info("Cluster bootstrapping succeeded! Switching to standard health response.")
 			isBootstrapped = true
 			w.WriteHeader(http.StatusOK)
 			return
