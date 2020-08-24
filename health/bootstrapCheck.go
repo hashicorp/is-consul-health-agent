@@ -1,6 +1,7 @@
 package health
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -28,14 +29,14 @@ type consulServer struct {
 // 3. Are all nodes in the current Upgrade Version Tag group voting?
 // 4. Is the cluster leader a member of the current Upgrade Version Tag group?
 // 5. Have all remaining servers in the cluster released voter status?
-func (hc *BootstrapHealthCheck) IsHealthy() bool {
+func (hc *BootstrapHealthCheck) IsHealthy(ctx context.Context) bool {
 	clusterVersion, err := hc.getLocalClusterVersion()
 	if err != nil {
 		log.Error("Unable to determine value of Autopilot UpgradeVersionTag: ", err)
 		return false
 	}
 
-	ready, err := hc.isClusterReady(clusterVersion)
+	ready, err := hc.isClusterReady(ctx, clusterVersion)
 	if err != nil {
 		log.Error(err)
 		return false
@@ -58,7 +59,7 @@ func (hc *BootstrapHealthCheck) getLocalClusterVersion() (string, error) {
 	return "", errors.New("Autopilot Upgade Version Tag missing from node configuration")
 }
 
-func (hc *BootstrapHealthCheck) isClusterReady(clusterVersion string) (bool, error) {
+func (hc *BootstrapHealthCheck) isClusterReady(ctx context.Context, clusterVersion string) (bool, error) {
 	//////////////////////////////////////
 	// Build a list of Consul servers
 	//////////////////////////////////////
@@ -67,7 +68,8 @@ func (hc *BootstrapHealthCheck) isClusterReady(clusterVersion string) (bool, err
 		newServers []consulServer
 	)
 
-	autopilot, err := hc.Client.Operator().AutopilotServerHealth(&api.QueryOptions{})
+	autopilotOpt := &api.QueryOptions{}
+	autopilot, err := hc.Client.Operator().AutopilotServerHealth(autopilotOpt.WithContext(ctx))
 	if err != nil {
 		if strings.Contains(err.Error(), "429") {
 			log.Info("Autopilot reports cluster is not yet in a healthy state")
@@ -99,7 +101,7 @@ func (hc *BootstrapHealthCheck) isClusterReady(clusterVersion string) (bool, err
 	opt := &api.QueryOptions{
 		Filter: strings.Join(filters, " or "),
 	}
-	nodes, _, err := hc.Client.Catalog().Nodes(opt)
+	nodes, _, err := hc.Client.Catalog().Nodes(opt.WithContext(ctx))
 	if err != nil {
 		return false, fmt.Errorf("Error querying Consul Catalog Nodes: %w", err)
 	}

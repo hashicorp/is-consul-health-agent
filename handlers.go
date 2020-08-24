@@ -15,7 +15,7 @@ func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
 			Client:      consulClient,
 			ClusterSize: clusterSize,
 		}
-		if check.IsHealthy() {
+		if check.IsHealthy(r.Context()) {
 			// Change global state
 			// Once this has succeeded, we switch to a standard health check
 			log.Info("Cluster bootstrapping succeeded! Switching to standard health response.")
