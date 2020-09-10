@@ -22,7 +22,7 @@ The supported environment variables are as follows:
 
 | Environment Variable | Default               | Description                                                                                                                            |
 |----------------------|-----------------------|----------------------------------------------------------------------------------------------------------------------------------------|
-| CONSUL_HTTP_ADDR     | http://localhost:8500 | Address at which Consul's HTTP listener may be reached. Prefix with `http://` for TCP transport, or `unix://` for UNIX Domain Sockets. |
+| CONSUL_HTTP_ADDR     | http://127.0.0.1:8500 | Address at which Consul's HTTP listener may be reached. Prefix with `http://` for TCP transport, or `unix://` for UNIX Domain Sockets. |
 | CONSUL_HTTP_TOKEN    | None                  | ACL Token to use when connecting to Consul                                                                                             |
 | CONSUL_CLUSTER_SIZE  | None                  | **REQUIRED** Number of instances that should gain voter status before a cluster is considered healthy                                  |
 | CONSUL_HEALTH_PORT   | 8080                  | TCP port for the health check's HTTP server to listen on                                                                               |
@@ -36,11 +36,7 @@ go build
 ...Profit!
 
 ## // TODO:
-- [ ] Create a DefaultHealthCheck struct
-  - Once a cluster is healthy, forward subsequent health checks to a Consul endpoint (e.g. /operator/autopilot/health).
-  - Currently after the cluster has bootstrapped we change state to automatically returning HTTP 200.
 - [ ] Add a commander ([mitchellh/cli](https://github.com/mitchellh/cli) or [spf12/cobra](https://github.com/spf13/cobra)).
 - [ ] Clean up config/environment variable handling.
 - [ ] Add signal handling. Refresh state on SIGHUP.
 - [ ] Make the upgrade version tag configurable. It is currently hard-coded to `consul_cluster_version`.
-- [ ] Add a context to the bootstrap health check process

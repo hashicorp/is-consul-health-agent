@@ -23,7 +23,7 @@ func main() {
 
 	if addr = os.Getenv("CONSUL_HTTP_ADDR"); addr == "" {
 		addr = "http://127.0.0.1:8500"
-		log.Warn("CONSUL_HTTP_ADDR was not set, defaulting to http://localhost:8500")
+		log.Warn("CONSUL_HTTP_ADDR was not set, defaulting to http://127.0.0.1:8500")
 	}
 
 	if token = os.Getenv("CONSUL_HTTP_TOKEN"); token == "" {
