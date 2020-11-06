@@ -1,9 +1,7 @@
 # Implementation Services - Consul Autopilot Health Check Agent
 This repository contains an application designed to execute health checks against a Hashicorp Consul Enterprise cluster. The goal of these health checks is to ensure an Autopilot-enabled cluster utilizing UpgradeVersionTag for automatic blue/green upgrades has successfully transferred voter status and cluster leadership, then output this information for observation using an outside (e.g. cloud platform) health checking service.
 
-The impetus for developing this service lies with deployment in Google Cloud Platform, or anywhere else a signaling mechanism such as EC2 Instance Lifecycle Hooks or Azure VM Extensions does not exist. With the addition of this agent, we can observe and ensure a Consul cluster has fully transitioned voter and leader status to a set of replacement instances, before destroying the outgoing node set.
-
-The health checking logic was derived from the HashiCorp Cloud Platform team's [Consul Host Manager](https://github.com/hashicorp/cloud-consul-host-manager) agent.
+The impetus for developing this service lies with deploying [Consul Autopilot Upgrade Migrations](https://www.consul.io/docs/enterprise/upgrades) in environments where a signaling mechanism such as EC2 Instance Lifecycle Hooks or Azure VM Extensions does not exist. With the addition of this agent, we can observe and ensure a Consul cluster has fully transitioned voter and leader status to a set of replacement instances, before destroying the outgoing node set.
 
 ## Configuration
 A systemd unit file is included in this repository, which will launch the agent and ensure it is restarted in the event of failure. The unit file alone, however, is not enough to launch the application. It is necessary to provide a [drop-in unit](https://coreos.com/os/docs/latest/using-systemd-drop-in-units.html) to configure environment variables the application relies on to communicate with the Consul cluster.
@@ -28,15 +26,10 @@ The supported environment variables are as follows:
 | CONSUL_HEALTH_PORT   | 8080                  | TCP port for the health check's HTTP server to listen on                                                                               |
 
 ## Building
+The latest binaries are available from the [GitHub Releases page](https://github.com/hashicorp/is-consul-health-agent/releases/latest). To build manually, run the following on a computer with go1.13+ installed:
+
 ```
 git clone git@github.com:hashicorp/is-consul-health-agent.git
 cd is-consul-health-agent
 go build
 ```
-...Profit!
-
-## // TODO:
-- [ ] Add a commander ([mitchellh/cli](https://github.com/mitchellh/cli) or [spf12/cobra](https://github.com/spf13/cobra)).
-- [ ] Clean up config/environment variable handling.
-- [ ] Add signal handling. Refresh state on SIGHUP.
-- [ ] Make the upgrade version tag configurable. It is currently hard-coded to `consul_cluster_version`.
