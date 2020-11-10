@@ -3,6 +3,11 @@ This repository contains an application designed to execute health checks agains
 
 The impetus for developing this service lies with deploying [Consul Autopilot Upgrade Migrations](https://www.consul.io/docs/enterprise/upgrades) in environments where a signaling mechanism such as EC2 Instance Lifecycle Hooks or Azure VM Extensions does not exist. With the addition of this agent, we can observe and ensure a Consul cluster has fully transitioned voter and leader status to a set of replacement instances, before destroying the outgoing node set.
 
+## Community Support
+Support for this tool is provided by the HashiCorp Implementation Services team on a best-effort basis, and it comes with no guarantee or service level agreement. Bugs and feature requests should be entered as GitHub issues. If an existing issue matches your requirements, please add a :+1: reaction to bump it up our priority list.
+
+Pull requests are welcome! We encourage you to fork this repository and send back a PR with any improvements.
+
 ## Configuration
 A systemd unit file is included in this repository, which will launch the agent and ensure it is restarted in the event of failure. The unit file alone, however, is not enough to launch the application. It is necessary to provide a [drop-in unit](https://coreos.com/os/docs/latest/using-systemd-drop-in-units.html) to configure environment variables the application relies on to communicate with the Consul cluster.
 
