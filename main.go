@@ -5,13 +5,57 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"sync"
 
 	"github.com/hashicorp/consul/api"
+	"github.com/hashicorp/is-consul-health-agent/health"
 	log "github.com/sirupsen/logrus"
 )
 
-var consulClient *api.Client
-var clusterSize int
+var (
+	consulClient   *api.Client
+	clusterSize    int
+	isBootstrapped bool = false
+	mu             sync.Mutex
+)
+
+func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
+	if !isBootstrapped {
+		mu.Lock() // We only mutate state in the initial health check, it's a one-way street
+		defer mu.Unlock()
+
+		// Check again once the lock has been acquired. If a concurrent check
+		// has validated cluster state, we can short-circuit.
+		if isBootstrapped {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		check := health.BootstrapHealthCheck{
+			Client:      consulClient,
+			ClusterSize: clusterSize,
+		}
+		if check.IsHealthy(r.Context()) {
+			// Change global state
+			// Once this has succeeded, we switch to a standard health check
+			log.Info("Cluster bootstrapping succeeded! Switching to standard health check.")
+			isBootstrapped = true
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+		w.WriteHeader(http.StatusServiceUnavailable)
+		return
+	}
+
+	check := health.NodeHealthCheck{
+		Client: consulClient,
+	}
+	if check.IsHealthy() {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	w.WriteHeader(http.StatusServiceUnavailable)
+}
 
 func main() {
 	var (
@@ -21,32 +65,42 @@ func main() {
 		listenAddr string
 	)
 
-	if addr = os.Getenv("CONSUL_HTTP_ADDR"); addr == "" {
+	const (
+		envClusterSize  = "CONSUL_CLUSTER_SIZE"
+		envClusterAddr  = "CONSUL_HTTP_ADDR"
+		envClusterToken = "CONSUL_HTTP_TOKEN"
+		envListenerPort = "CONSUL_HEALTH_PORT"
+	)
+
+	if rawAddr, ok := os.LookupEnv(envClusterAddr); ok {
+		addr = rawAddr
+	} else {
 		addr = "http://127.0.0.1:8500"
-		log.Warn("CONSUL_HTTP_ADDR was not set, defaulting to http://127.0.0.1:8500")
+		log.Warnf("%s was not set, defaulting to %s", envClusterAddr, addr)
 	}
 
-	if token = os.Getenv("CONSUL_HTTP_TOKEN"); token == "" {
-		log.Warn("CONSUL_HTTP_TOKEN was not set, defaulting to no token.")
+	if rawToken, ok := os.LookupEnv(envClusterToken); ok {
+		token = rawToken
+	} else {
+		log.Warnf("%s was not set, defaulting to no token.", envClusterToken)
 	}
 
-	if listenAddr = os.Getenv("CONSUL_HEALTH_PORT"); listenAddr == "" {
-		log.Warn("CONSUL_HEALTH_PORT was not set, defaulting to 8080")
+	if rawAddr, ok := os.LookupEnv(envListenerPort); ok {
+		listenAddr = rawAddr
+	} else {
+		log.Warnf("%s was not set, defaulting to 8080", envListenerPort)
 		listenAddr = "8080"
 	}
 	listenAddr = fmt.Sprintf(":%s", listenAddr)
 
-	raw := os.Getenv("CONSUL_CLUSTER_SIZE")
-	if raw == "" {
-		log.Fatal("CONSUL_CLUSTER_SIZE was not set. Exiting.")
-		os.Exit(-1)
-	} else {
+	if raw, ok := os.LookupEnv(envClusterSize); ok {
 		i, err := strconv.ParseInt(raw, 10, 32)
 		if err != nil {
-			log.Fatal("Unable to parse CONSUL_CLUSTER_SIZE")
-			os.Exit(-1)
+			log.Fatal("set cluster size: ", err)
 		}
 		clusterSize = int(i)
+	} else {
+		log.Fatalf("%s was not set. Exiting.", envClusterSize)
 	}
 
 	consulClient, err = api.NewClient(&api.Config{
@@ -54,13 +108,12 @@ func main() {
 		Token:   token,
 	})
 	if err != nil {
-		log.Fatal("Unable to initialize Consul client: ", err)
-		os.Exit(-1)
+		log.Fatal("initialize Consul client: ", err)
 	}
 
 	log.Info("Starting up health check listener")
-	http.HandleFunc("/health", healthCheckHandler)
 
+	http.HandleFunc("/health", healthCheckHandler)
 	err = http.ListenAndServe(listenAddr, nil)
 	if err != nil {
 		log.Fatal("HTTP server exited: ", err)
