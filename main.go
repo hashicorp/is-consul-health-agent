@@ -15,6 +15,7 @@ import (
 var (
 	consulClient   *api.Client
 	clusterSize    int
+	voterCount     int
 	isBootstrapped bool = false
 	mu             sync.Mutex
 )
@@ -70,6 +71,7 @@ func main() {
 		envClusterAddr  = "CONSUL_HTTP_ADDR"
 		envClusterToken = "CONSUL_HTTP_TOKEN"
 		envListenerPort = "CONSUL_HEALTH_PORT"
+		envVoterCount   = "CONSUL_VOTER_COUNT"
 	)
 
 	if rawAddr, ok := os.LookupEnv(envClusterAddr); ok {
@@ -101,6 +103,17 @@ func main() {
 		clusterSize = int(i)
 	} else {
 		log.Fatalf("%s was not set. Exiting.", envClusterSize)
+	}
+
+	if raw, ok := os.LookupEnv(envVoterCount); ok {
+		i, err := strconv.ParseInt(raw, 10, 32)
+		if err != nil {
+			log.Fatal("set voter pool size: ", err)
+		}
+		voterCount = int(i)
+	} else {
+		log.Warnf("%s was not set. Defaulting to %d", envVoterCount, clusterSize)
+		voterCount = clusterSize
 	}
 
 	consulClient, err = api.NewClient(&api.Config{

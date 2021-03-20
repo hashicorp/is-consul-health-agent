@@ -16,6 +16,7 @@ import (
 type BootstrapHealthCheck struct {
 	Client      *api.Client
 	ClusterSize int
+	VoterCount  int
 }
 
 type consulServer struct {
@@ -143,15 +144,20 @@ func (hc *BootstrapHealthCheck) isClusterReady(ctx context.Context, clusterVersi
 	// transferred voter status
 	//////////////////////////////////////
 	var foundLeader bool
+	voters := 0
 	for _, server := range newServers {
-		if !server.health.Voter {
-			log.Infof("Replacement node is not yet voting: %s", server.health.ID)
-			return false, nil
+		if server.health.Voter {
+			voters++
 		}
 
 		if server.health.Leader {
 			foundLeader = true
 		}
+	}
+
+	if voters < hc.VoterCount {
+		log.Info("Cluster does not yet have the expected number of voters.")
+		return false, nil
 	}
 
 	//////////////////////////////////////
