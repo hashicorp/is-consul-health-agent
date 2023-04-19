@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1
+        uses: actions/create-release@v1 # TSCCR: no entry for repository "actions/create-release"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -32,9 +32,9 @@ jobs:
     needs: create-release
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
       - name: Setup Golang Environment
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@4d34df0c2316fe8122ab82dc22947d607c0c91f9 # v4.0.0
         with:
           go-version: '~1.14.4'
       - name: Build Binary
@@ -45,7 +45,7 @@ jobs:
       - name: Archive Artifact
         run: zip artifact.zip is-consul-health-agent
       - name: Upload Release Artifact
-        uses: actions/upload-release-asset@v1
+        uses: actions/upload-release-asset@v1 # TSCCR: no entry for repository "actions/upload-release-asset"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -59,9 +59,9 @@ jobs:
     needs: create-release
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
       - name: Setup Golang Environment
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@4d34df0c2316fe8122ab82dc22947d607c0c91f9 # v4.0.0
         with:
           go-version: '~1.14.4'
       - name: Build Binary
@@ -72,7 +72,7 @@ jobs:
       - name: Archive Artifact
         run: zip artifact.zip is-consul-health-agent
       - name: Upload Release Artifact
-        uses: actions/upload-release-asset@v1
+        uses: actions/upload-release-asset@v1 # TSCCR: no entry for repository "actions/upload-release-asset"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -86,9 +86,9 @@ jobs:
     needs: create-release
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
       - name: Setup Golang Environment
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@4d34df0c2316fe8122ab82dc22947d607c0c91f9 # v4.0.0
         with:
           go-version: '~1.14.4'
       - name: Build Binary
@@ -99,7 +99,7 @@ jobs:
       - name: Archive Artifact
         run: zip artifact.zip is-consul-health-agent.exe
       - name: Upload Release Artifact
-        uses: actions/upload-release-asset@v1
+        uses: actions/upload-release-asset@v1 # TSCCR: no entry for repository "actions/upload-release-asset"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
